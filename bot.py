@@ -122,11 +122,21 @@ async def webhook():
     return "ok"
 
 # === Launch Webhook App Properly ===
+import threading
+
 if __name__ == "__main__":
-    async def main():
+    async def telegram_worker():
         await telegram_app.initialize()
+        await telegram_app.start()
         await telegram_app.bot.set_webhook(WEBHOOK_URL)
         print(f"✅ Webhook set to {WEBHOOK_URL}")
-        flask_app.run(host="0.0.0.0", port=5000)
+        # Note: we do NOT stop the app or run idle because Flask is handling updates via webhook
 
-    asyncio.run(main())
+    def start_async_loop():
+        asyncio.run(telegram_worker())
+
+    # Start Telegram event loop in separate thread
+    threading.Thread(target=start_async_loop).start()
+
+    # Start Flask normally
+    flask_app.run(host="0.0.0.0", port=5000)
