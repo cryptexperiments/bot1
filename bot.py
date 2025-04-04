@@ -1,17 +1,16 @@
 import os
+import asyncio
 from flask import Flask, request
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, ConversationHandler,
-    MessageHandler, ContextTypes, filters
+    MessageHandler, ContextTypes, filters, Application
 )
 from dotenv import load_dotenv
 from db import Session, get_or_create_user, add_task, get_user_tasks, set_wallet
 from models import Task, task_instructions
 from datetime import datetime
-import asyncio
 
-# === Config ===
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
 BASE_URL = os.getenv("BASE_URL")
@@ -19,26 +18,23 @@ if not TOKEN or not BASE_URL:
     raise ValueError("TOKEN or BASE_URL not set.")
 
 ASK_WALLET = range(1)
+
+# === Flask App
+flask_app = Flask(__name__)
+telegram_app: Application = ApplicationBuilder().token(TOKEN).build()
+
 WEBHOOK_PATH = f"/webhook/{TOKEN}"
 WEBHOOK_URL = f"{BASE_URL}{WEBHOOK_PATH}"
 
-# === Flask + Telegram App ===
-flask_app = Flask(__name__)
-telegram_app = ApplicationBuilder().token(TOKEN).build()
-
-# === Handlers ===
-
+# === Telegram Handlers ===
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     session = Session()
     user = get_or_create_user(session, update.effective_user.id)
     add_task(session, user, Task.STARTED)
 
-    msg = "👋 Welcome to the best Crypto Bot ever! The Boss TEST is here!  Let's get you started:\n\n"
+    msg = "👋 Welcome to the best Crypto Bot ever! Let's get you started:\n\n"
     for task, (desc, cmd) in task_instructions.items():
-        if cmd:
-            msg += f"➡️ *{desc}*: [{cmd}]({cmd})\n"
-        else:
-            msg += f"✅ *{desc}*\n"
+        msg += f"✅ *{desc}*\n" if task in get_user_tasks(session, user) else f"➡️ *{desc}*: [{cmd}]({cmd})\n"
     await update.message.reply_text(msg, parse_mode="Markdown", disable_web_page_preview=True)
     session.close()
 
@@ -102,7 +98,7 @@ async def cancel_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("❌ Wallet input cancelled.")
     return ConversationHandler.END
 
-# === Register Handlers ===
+# === Add handlers ===
 telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(CommandHandler("status", status))
 telegram_app.add_handler(CommandHandler("complete_task", complete_task))
@@ -117,26 +113,19 @@ telegram_app.add_handler(wallet_conv_handler)
 # === Webhook route ===
 @flask_app.post(WEBHOOK_PATH)
 async def webhook():
-    update = Update.de_json(request.get_json(force=True), telegram_app.bot)
+    data = request.get_json(force=True)
+    update = Update.de_json(data, telegram_app.bot)
     await telegram_app.process_update(update)
     return "ok"
 
-# === Launch Webhook App Properly ===
-import threading
-
+# === Start everything ===
 if __name__ == "__main__":
-    async def telegram_worker():
+    async def main():
         await telegram_app.initialize()
-        await telegram_app.start()
         await telegram_app.bot.set_webhook(WEBHOOK_URL)
-        print(f"✅ Webhook set to {WEBHOOK_URL}")
-        # Note: we do NOT stop the app or run idle because Flask is handling updates via webhook
+        print("✅ Webhook set to:", WEBHOOK_URL)
+        await telegram_app.start()
 
-    def start_async_loop():
-        asyncio.run(telegram_worker())
-
-    # Start Telegram event loop in separate thread
-    threading.Thread(target=start_async_loop).start()
-
-    # Start Flask normally
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
     flask_app.run(host="0.0.0.0", port=5000)
