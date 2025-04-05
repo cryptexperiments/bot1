@@ -52,6 +52,31 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             msg += f"✅ *{desc}*\n"
     await update.message.reply_text(msg, parse_mode="Markdown", disable_web_page_preview=True)
     session.close()
+    
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("start() called")
+    session = Session()
+    user = get_or_create_user(session, update.effective_user.id)
+    add_task(session, user, Task.STARTED)
+
+    msg = (
+        "👋 Welcome to the best Crypto Bot ever! The Boss TEST is here! Let's get you started:\n\n"
+    )
+    for task, (desc, cmd) in task_instructions.items():
+        if cmd:
+            msg += f"➡️ *{desc}*: [{cmd}]({cmd})\n"
+        else:
+            msg += f"✅ *{desc}*\n"
+
+    msg += "\n🌐 *Follow us on Social Media:*\n"
+    msg += "🔗 [CoinMarketCap Profile 1](https://coinmarketcap.com/community/profile/JimmyBossCollective/)\n"
+    msg += "🔗 [CoinMarketCap Profile 2](https://coinmarketcap.com/community/profile/Jimmyboss/)\n"
+    msg += "🐦 [Twitter: JBC Collective](https://x.com/JBCcollective)\n"
+    msg += "🐦 [Twitter: Jimmy Boss](https://x.com/jimmyboss48)\n"
+    msg += "📺 [YouTube Channel](https://www.youtube.com/channel/UCDEUuvfe5bkFgpSvi143uwQ)\n"
+
+    await update.message.reply_text(msg, parse_mode="Markdown", disable_web_page_preview=True)
+    session.close()
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("status() called")
