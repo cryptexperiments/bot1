@@ -137,12 +137,20 @@ if __name__ == "__main__":
             await asyncio.Event().wait()
         except Exception as e:
             print(f"Error during bot initialization: {e}")
-        finally:
-            # Stop the application before shutting it down
-            await telegram_app.stop()
-            await telegram_app.shutdown()
+
+    async def shutdown():
+        print("Shutting down bot...")
+        await telegram_app.stop()
+        await telegram_app.shutdown()
 
     # Create a new event loop to avoid "Event loop is closed" errors
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(main())
+
+    try:
+        loop.run_until_complete(main())
+    except KeyboardInterrupt:
+        print("Received termination signal. Shutting down...")
+        loop.run_until_complete(shutdown())
+    finally:
+        loop.close()
