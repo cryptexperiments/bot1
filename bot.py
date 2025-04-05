@@ -132,10 +132,17 @@ if __name__ == "__main__":
             await telegram_app.bot.set_webhook(WEBHOOK_URL)
             await telegram_app.start()
             print("✅ Webhook is set:", WEBHOOK_URL)
+
+            # Keep the application running
+            await asyncio.Event().wait()
         except Exception as e:
             print(f"Error during bot initialization: {e}")
         finally:
-            await telegram_app.shutdown()  # Ensure proper cleanup
+            # Stop the application before shutting it down
+            await telegram_app.stop()
+            await telegram_app.shutdown()
 
-    asyncio.get_event_loop().run_until_complete(main())
-    flask_app.run(host="0.0.0.0", port=5000)
+    # Create a new event loop to avoid "Event loop is closed" errors
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(main())
