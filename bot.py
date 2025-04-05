@@ -69,8 +69,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             msg += f"✅ *{desc}*\n"
 
     msg += "\n🌐 *Follow us on Social Media:*\n"
-    msg += "🔗 [CoinMarketCap Profile 1](https://coinmarketcap.com/community/profile/JimmyBossCollective/)\n"
-    msg += "🔗 [CoinMarketCap Profile 2](https://coinmarketcap.com/community/profile/Jimmyboss/)\n"
+    msg += "🔗 [CoinMarketCap JBC Collective](https://coinmarketcap.com/community/profile/JimmyBossCollective/)\n"
+    msg += "🔗 [CoinMarketCap JimmyBoss](https://coinmarketcap.com/community/profile/Jimmyboss/)\n"
     msg += "🐦 [Twitter: JBC Collective](https://x.com/JBCcollective)\n"
     msg += "🐦 [Twitter: Jimmy Boss](https://x.com/jimmyboss48)\n"
     msg += "📺 [YouTube Channel](https://www.youtube.com/channel/UCDEUuvfe5bkFgpSvi143uwQ)\n"
