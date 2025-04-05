@@ -37,21 +37,6 @@ WEBHOOK_PATH = f"/webhook/{TOKEN}"
 WEBHOOK_URL = f"{BASE_URL}{WEBHOOK_PATH}"
 
 # === Telegram Handlers ===
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("start() called")
-    session = Session()
-    user = get_or_create_user(session, update.effective_user.id)
-    add_task(session, user, Task.STARTED)
-
-    msg = "👋 Welcome to the best Crypto Bot ever! The Boss TEST is here! Let's get you started:\n\n"
-    for task, (desc, cmd) in task_instructions.items():
-        if cmd:
-            msg += f"➡️ *{desc}*: [{cmd}]({cmd})\n"
-        else:
-            msg += f"✅ *{desc}*\n"
-    await update.message.reply_text(msg, parse_mode="Markdown", disable_web_page_preview=True)
-    session.close()
     
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("start() called")
@@ -71,8 +56,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg += "\n🌐 *Follow us on Social Media:*\n"
     msg += "🔗 [CoinMarketCap JBC Collective](https://coinmarketcap.com/community/profile/JimmyBossCollective/)\n"
     msg += "🔗 [CoinMarketCap JimmyBoss](https://coinmarketcap.com/community/profile/Jimmyboss/)\n"
-    msg += "🐦 [Twitter: JBC Collective](https://x.com/JBCcollective)\n"
-    msg += "🐦 [Twitter: Jimmy Boss](https://x.com/jimmyboss48)\n"
+    msg += "✖️ [X: JBC Collective](https://x.com/JBCcollective)\n"
+    msg += "✖️ [X: Jimmy Boss](https://x.com/jimmyboss48)\n"
     msg += "📺 [YouTube Channel](https://www.youtube.com/channel/UCDEUuvfe5bkFgpSvi143uwQ)\n"
 
     await update.message.reply_text(msg, parse_mode="Markdown", disable_web_page_preview=True)
@@ -83,7 +68,8 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     session = Session()
     user = get_or_create_user(session, update.effective_user.id)
     completed = set(get_user_tasks(session, user))
-
+    add_task(session, user, Task.STATUS)
+    
     msg = "📋 *Your task progress:*\n\n"
     for task, (desc, cmd) in task_instructions.items():
         if task in completed:
