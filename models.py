@@ -20,13 +20,14 @@ task_instructions = {
     Task.COMPLETED: ("All done!", None),
 }
 
-
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     telegram_id = Column(Integer, unique=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     wallet_address = Column(String, nullable=True)
+    referral_code = Column(String, nullable=True)
+    referred_by = Column(String, nullable=True)
     tasks = relationship("UserTask", back_populates="user")
 
 class UserTask(Base):

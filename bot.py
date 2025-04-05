@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.INFO)
 flask_app = Flask(__name__)
 
 # Telegram bot application
-telegram_app = ApplicationBuilder().token(TOKEN).get_updates_http_version("1.1").connection_pool_size(100).build()
+telegram_app = ApplicationBuilder().token(TOKEN).get_updates_http_version("1.1").connection_pool_size(100).pool_timeout(10).build()
 
 WEBHOOK_PATH = f"/webhook/{TOKEN}"
 WEBHOOK_URL = f"{BASE_URL}{WEBHOOK_PATH}"
@@ -42,6 +42,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("start() called")
     session = Session()
     user = get_or_create_user(session, update.effective_user.id)
+    referral = context.args[0] if context.args else None
     add_task(session, user, Task.STARTED)
 
     msg = (
@@ -129,10 +130,30 @@ async def cancel_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("❌ Wallet input cancelled.")
     return ConversationHandler.END
 
+async def refer(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("refer() called")
+    session = Session()
+    user = get_or_create_user(session, update.effective_user.id)
+
+    # Generate a referral link
+    referral_link = f"{BASE_URL}/start?ref={user.id}"
+
+    # Message to the user
+    msg = (
+        "🎉 *Invite your friends and earn rewards!*\n\n"
+        "Share the referral link below with your friends:\n"
+        f"🔗 [Click to Join]({referral_link})\n\n"
+        "When your friends join using your referral link, you'll earn rewards!"
+    )
+
+    await update.message.reply_text(msg, parse_mode="Markdown", disable_web_page_preview=True)
+    session.close()
+    
 # Register Telegram handlers
 telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(CommandHandler("status", status))
 telegram_app.add_handler(CommandHandler("complete_task", complete_task))
+telegram_app.add_handler(CommandHandler("refer", refer))
 
 wallet_conv_handler = ConversationHandler(
     entry_points=[CommandHandler("add_wallet", start_wallet_conversation)],
@@ -165,7 +186,8 @@ async def webhook():
 if __name__ == "__main__":
     print("Starting bot...")
     # Set up webhook and start Flask
-    run_async(telegram_app.initialize)()
-    run_async(telegram_app.bot.set_webhook)(WEBHOOK_URL)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(telegram_app.initialize())
+    loop.run_until_complete(telegram_app.bot.set_webhook(WEBHOOK_URL))
     logging.info(f"✅ Webhook is set: {WEBHOOK_URL}")
     flask_app.run(host="0.0.0.0", port=5000)
