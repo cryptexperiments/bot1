@@ -1,5 +1,8 @@
 import os
-from flask import Flask, request
+import logging
+import asyncio
+import nest_asyncio
+from flask import Flask, request, jsonify
 from telegram import Update
 from telegram.ext import (
     Application, ApplicationBuilder, CommandHandler,
@@ -8,8 +11,11 @@ from telegram.ext import (
 from dotenv import load_dotenv
 from db import Session, get_or_create_user, add_task, get_user_tasks, set_wallet
 from models import Task, task_instructions
-from datetime import datetime
 
+# Apply nest_asyncio to allow nested event loops
+nest_asyncio.apply()
+
+# Load environment variables
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
 BASE_URL = os.getenv("BASE_URL")
@@ -18,16 +24,19 @@ if not TOKEN or not BASE_URL:
 
 ASK_WALLET = range(1)
 
-# === Flask
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
+# Flask app
 flask_app = Flask(__name__)
 
-# === Telegram Application
+# Telegram bot application
 telegram_app = ApplicationBuilder().token(TOKEN).get_updates_http_version("1.1").connection_pool_size(100).build()
 
 WEBHOOK_PATH = f"/webhook/{TOKEN}"
 WEBHOOK_URL = f"{BASE_URL}{WEBHOOK_PATH}"
 
-# === Telegram Handlers
+# === Telegram Handlers ===
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     session = Session()
@@ -103,7 +112,7 @@ async def cancel_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("❌ Wallet input cancelled.")
     return ConversationHandler.END
 
-# === Register Handlers
+# Register Telegram handlers
 telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(CommandHandler("status", status))
 telegram_app.add_handler(CommandHandler("complete_task", complete_task))
@@ -115,22 +124,28 @@ wallet_conv_handler = ConversationHandler(
 )
 telegram_app.add_handler(wallet_conv_handler)
 
-# === Webhook route
-@flask_app.post(WEBHOOK_PATH)
+# === Helper to Run Async Functions in Flask ===
+def run_async(func):
+    def wrapper(*args, **kwargs):
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        return loop.run_until_complete(func(*args, **kwargs))
+    return wrapper
+
+# Webhook route
+@flask_app.route(WEBHOOK_PATH, methods=["POST"])
+@run_async
 async def webhook():
     update = Update.de_json(request.get_json(force=True), telegram_app.bot)
     await telegram_app.process_update(update)
-    return "ok"
+    return jsonify({"status": "ok"})
 
-# === Start Bot and Set Webhook
+# Start Flask app
 if __name__ == "__main__":
-    import asyncio
-
-    async def main():
-        await telegram_app.initialize()
-        await telegram_app.bot.set_webhook(WEBHOOK_URL)
-        await telegram_app.start()
-        print("✅ Webhook is set:", WEBHOOK_URL)
-
-    asyncio.get_event_loop().run_until_complete(main())
+    # Set up webhook and start Flask
+    run_async(telegram_app.initialize)()
+    run_async(telegram_app.bot.set_webhook)(WEBHOOK_URL)
+    logging.info(f"✅ Webhook is set: {WEBHOOK_URL}")
     flask_app.run(host="0.0.0.0", port=5000)
