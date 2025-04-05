@@ -39,6 +39,7 @@ WEBHOOK_URL = f"{BASE_URL}{WEBHOOK_PATH}"
 # === Telegram Handlers ===
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("start() called")
     session = Session()
     user = get_or_create_user(session, update.effective_user.id)
     add_task(session, user, Task.STARTED)
@@ -53,6 +54,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     session.close()
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("status() called")
     session = Session()
     user = get_or_create_user(session, update.effective_user.id)
     completed = set(get_user_tasks(session, user))
@@ -72,6 +74,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(msg, parse_mode="Markdown", disable_web_page_preview=True)
 
 async def complete_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("complete_task() called")
     if not context.args:
         await update.message.reply_text("❗ Usage: /complete_task WALLET_ADDED")
         return
@@ -89,10 +92,12 @@ async def complete_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
     session.close()
 
 async def start_wallet_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("start_wallet_conversation() called")
     await update.message.reply_text("💼 Please send your wallet address now.")
     return ASK_WALLET
 
 async def receive_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("receive_wallet() called")
     wallet_address = update.message.text.strip()
     if len(wallet_address) < 10:
         await update.message.reply_text("❗ Invalid wallet address. Please try again.")
@@ -109,6 +114,7 @@ async def receive_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 async def cancel_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("cancel_wallet() called")
     await update.message.reply_text("❌ Wallet input cancelled.")
     return ConversationHandler.END
 
@@ -127,6 +133,7 @@ telegram_app.add_handler(wallet_conv_handler)
 # === Helper to Run Async Functions in Flask ===
 def run_async(func):
     def wrapper(*args, **kwargs):
+        print(f"run_async() called for {func.__name__}")
         loop = asyncio.get_event_loop()
         if loop.is_closed():
             loop = asyncio.new_event_loop()
@@ -138,12 +145,14 @@ def run_async(func):
 @flask_app.route(WEBHOOK_PATH, methods=["POST"])
 @run_async
 async def webhook():
+    print("webhook() called")
     update = Update.de_json(request.get_json(force=True), telegram_app.bot)
     await telegram_app.process_update(update)
     return jsonify({"status": "ok"})
 
 # Start Flask app
 if __name__ == "__main__":
+    print("Starting bot...")
     # Set up webhook and start Flask
     run_async(telegram_app.initialize)()
     run_async(telegram_app.bot.set_webhook)(WEBHOOK_URL)
