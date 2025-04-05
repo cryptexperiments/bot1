@@ -1,8 +1,8 @@
 import os
-import asyncio
+from flask import Flask, request
 from telegram import Update
 from telegram.ext import (
-    ApplicationBuilder, CommandHandler,
+    Application, ApplicationBuilder, CommandHandler,
     ConversationHandler, MessageHandler, ContextTypes, filters
 )
 from dotenv import load_dotenv
@@ -18,14 +18,17 @@ if not TOKEN or not BASE_URL:
 
 ASK_WALLET = range(1)
 
-# Crear la aplicación de Telegram
+# === Flask
+flask_app = Flask(__name__)
+
+# === Telegram Application
 telegram_app = ApplicationBuilder().token(TOKEN).get_updates_http_version("1.1").build()
 
-# Configuración del webhook y puerto
-WEBHOOK_URL = f"{BASE_URL}/webhook/{TOKEN}"
-PORT = int(os.environ.get("PORT", "8443"))
+WEBHOOK_PATH = f"/webhook/{TOKEN}"
+WEBHOOK_URL = f"{BASE_URL}{WEBHOOK_PATH}"
 
-# === Handlers del Bot ===
+# === Telegram Handlers
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     session = Session()
     user = get_or_create_user(session, update.effective_user.id)
@@ -100,29 +103,34 @@ async def cancel_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("❌ Wallet input cancelled.")
     return ConversationHandler.END
 
-# === Registro de Handlers ===
+# === Register Handlers
 telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(CommandHandler("status", status))
 telegram_app.add_handler(CommandHandler("complete_task", complete_task))
+
 wallet_conv_handler = ConversationHandler(
     entry_points=[CommandHandler("add_wallet", start_wallet_conversation)],
     states={ASK_WALLET: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_wallet)]},
-    fallbacks=[CommandHandler("cancel", cancel_wallet)]
+    fallbacks=[CommandHandler("cancel", cancel_wallet)],
 )
 telegram_app.add_handler(wallet_conv_handler)
 
-# === Arranque del Bot en modo Webhook ===
+# === Webhook route
+@flask_app.post(WEBHOOK_PATH)
+async def webhook():
+    update = Update.de_json(request.get_json(force=True), telegram_app.bot)
+    await telegram_app.process_update(update)
+    return "ok"
+
+# === Start Bot and Set Webhook
 if __name__ == "__main__":
+    import asyncio
+
     async def main():
         await telegram_app.initialize()
         await telegram_app.bot.set_webhook(WEBHOOK_URL)
+        await telegram_app.start()
         print("✅ Webhook is set:", WEBHOOK_URL)
-        # Este método bloquea y mantiene el bot corriendo
-        telegram_app.run_webhook(
-            listen="0.0.0.0",
-            port=PORT,
-            url_path="",
-            webhook_url=WEBHOOK_URL
-        )
 
-    asyncio.run(main())
+    asyncio.get_event_loop().run_until_complete(main())
+    flask_app.run(host="0.0.0.0", port=5000)
