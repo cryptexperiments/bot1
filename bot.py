@@ -22,7 +22,7 @@ ASK_WALLET = range(1)
 flask_app = Flask(__name__)
 
 # === Telegram Application
-telegram_app = ApplicationBuilder().token(TOKEN).get_updates_http_version("1.1").build()
+telegram_app = ApplicationBuilder().token(TOKEN).get_updates_http_version("1.1").connection_pool_size(100).build()
 
 WEBHOOK_PATH = f"/webhook/{TOKEN}"
 WEBHOOK_URL = f"{BASE_URL}{WEBHOOK_PATH}"
@@ -127,10 +127,15 @@ if __name__ == "__main__":
     import asyncio
 
     async def main():
-        await telegram_app.initialize()
-        await telegram_app.bot.set_webhook(WEBHOOK_URL)
-        await telegram_app.start()
-        print("✅ Webhook is set:", WEBHOOK_URL)
+        try:
+            await telegram_app.initialize()
+            await telegram_app.bot.set_webhook(WEBHOOK_URL)
+            await telegram_app.start()
+            print("✅ Webhook is set:", WEBHOOK_URL)
+        except Exception as e:
+            print(f"Error during bot initialization: {e}")
+        finally:
+            await telegram_app.shutdown()  # Ensure proper cleanup
 
     asyncio.get_event_loop().run_until_complete(main())
     flask_app.run(host="0.0.0.0", port=5000)
