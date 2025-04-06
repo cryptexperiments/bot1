@@ -10,7 +10,7 @@ from telegram.ext import (
 )
 from dotenv import load_dotenv
 from db import Session, get_or_create_user, add_task, get_user_tasks, set_wallet
-from models import Task, task_instructions
+from models import User, UserTask, Task, Referral, task_instructions
 
 # Apply nest_asyncio to allow nested event loops
 nest_asyncio.apply()
