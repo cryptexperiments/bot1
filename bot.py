@@ -11,6 +11,7 @@ from telegram.ext import (
 from dotenv import load_dotenv
 from db import Session, get_or_create_user, add_task, get_user_tasks, set_wallet
 from models import User, UserTask, Task, Referral, task_instructions
+from datetime import datetime
 
 # Apply nest_asyncio to allow nested event loops
 nest_asyncio.apply()
@@ -69,8 +70,8 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("status() called")
     session = Session()
     user = get_or_create_user(session, update.effective_user.id)
-    completed = set(get_user_tasks(session, user))
     add_task(session, user, Task.STATUS)
+    completed = set(get_user_tasks(session, user))
     
     msg = "📋 *Your task progress:*\n\n"
     for task, (desc, cmd) in task_instructions.items():
@@ -192,7 +193,36 @@ async def dump_db_790(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     # Send the data as a message
-    await update.message.reply_text(db_dump, parse_mode="Markdown")
+    await update.message.reply_text(db_dump, parse_mode="Markdown", disable_web_page_preview=True)
+    session.close()
+
+async def add_test_user_709(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("add_test_user_709() called")
+    session = Session()
+
+    # Check if the test user already exists
+    telegram_id = "tonto001"
+    user = session.query(User).filter_by(telegram_id=telegram_id).first()
+
+    if not user:
+        # Create the test user
+        user = User(
+            telegram_id=telegram_id,
+            created_at=datetime.utcnow(),
+            referral_code="TEST709"
+        )
+        session.add(user)
+        session.commit()
+        msg = "✅ Test user created successfully!"
+    else:
+        msg = "⚠️ Test user already exists!"
+
+    # Generate the referral link
+    referral_link = f"{BASE_URL}/start?ref={user.referral_code}"
+    msg += f"\n\n🔗 *Referral Link*: [Click to Join]({referral_link})"
+
+    # Send the message
+    await update.message.reply_text(msg, parse_mode="Markdown", disable_web_page_preview=True)
     session.close()
 
 # Register Telegram handlers
@@ -201,6 +231,7 @@ telegram_app.add_handler(CommandHandler("status", status))
 telegram_app.add_handler(CommandHandler("complete_task", complete_task))
 telegram_app.add_handler(CommandHandler("refer", refer))
 telegram_app.add_handler(CommandHandler("dump_db_790", dump_db_790))
+telegram_app.add_handler(CommandHandler("add_test_user_709", add_test_user_709))
 
 wallet_conv_handler = ConversationHandler(
     entry_points=[CommandHandler("add_wallet", start_wallet_conversation)],
