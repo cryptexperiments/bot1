@@ -41,8 +41,9 @@ WEBHOOK_URL = f"{BASE_URL}{WEBHOOK_PATH}"
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("start() called")
     session = Session()
-    user = get_or_create_user(session, update.effective_user.id)
+    
     referral = context.args[0] if context.args else None
+    user = get_or_create_user(session, update.effective_user.id, referral)
     add_task(session, user, Task.STARTED)
 
     msg = (
@@ -148,12 +149,58 @@ async def refer(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(msg, parse_mode="Markdown", disable_web_page_preview=True)
     session.close()
-    
+
+async def dump_db_790(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("dump_db_790() called")
+    session = Session()
+
+    # Fetch all users
+    users = session.query(User).all()
+    user_data = "\n".join(
+        [
+            f"ID: {user.id}, Telegram ID: {user.telegram_id}, Wallet: {user.wallet_address}, "
+            f"Referral Code: {user.referral_code}, Referred By: {user.referred_by}, "
+            f"Referral Count: {user.referral_count}"
+            for user in users
+        ]
+    )
+
+    # Fetch all user tasks
+    user_tasks = session.query(UserTask).all()
+    task_data = "\n".join(
+        [
+            f"ID: {task.id}, User ID: {task.user_id}, Task: {task.task.value}, Completed At: {task.completed_at}"
+            for task in user_tasks
+        ]
+    )
+
+    # Fetch all referrals
+    referrals = session.query(Referral).all()
+    referral_data = "\n".join(
+        [
+            f"ID: {referral.id}, Referred By ID: {referral.referred_by_id}, "
+            f"Referred User ID: {referral.referred_user_id}, Referred At: {referral.referred_at}"
+            for referral in referrals
+        ]
+    )
+
+    # Combine all data
+    db_dump = (
+        f"📋 *Users:*\n{user_data if user_data else 'No users found.'}\n\n"
+        f"📋 *User Tasks:*\n{task_data if task_data else 'No tasks found.'}\n\n"
+        f"📋 *Referrals:*\n{referral_data if referral_data else 'No referrals found.'}"
+    )
+
+    # Send the data as a message
+    await update.message.reply_text(db_dump, parse_mode="Markdown")
+    session.close()
+
 # Register Telegram handlers
 telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(CommandHandler("status", status))
 telegram_app.add_handler(CommandHandler("complete_task", complete_task))
 telegram_app.add_handler(CommandHandler("refer", refer))
+telegram_app.add_handler(CommandHandler("dump_db_790", dump_db_790))
 
 wallet_conv_handler = ConversationHandler(
     entry_points=[CommandHandler("add_wallet", start_wallet_conversation)],

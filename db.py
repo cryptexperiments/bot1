@@ -7,10 +7,16 @@ engine = create_engine('sqlite:///bot.db')
 Session = sessionmaker(bind=engine)
 Base.metadata.create_all(engine)
 
-def get_or_create_user(session, telegram_id):
+def get_or_create_user(session, telegram_id, referral_code=None):
     user = session.query(User).filter_by(telegram_id=telegram_id).first()
     if not user:
-        user = User(telegram_id=telegram_id, created_at=datetime.utcnow())
+        user = User(telegram_id=telegram_id, created_at=datetime.utcnow(), referral_code=referral_code)
+        if referral_code:
+            referred_by = session.query(User).filter_by(referral_code=referral_code).first()
+            if referred_by:
+                user.referred_by = referred_by.referral_code
+                referred_by.referral_count += 1
+                session.add(referred_by)
         session.add(user)
         session.commit()
     return user
