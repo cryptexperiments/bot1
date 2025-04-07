@@ -63,6 +63,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg += "✖️ [X: Jimmy Boss](https://x.com/jimmyboss48)\n"
     msg += "📺 [YouTube Channel](https://www.youtube.com/channel/UCDEUuvfe5bkFgpSvi143uwQ)\n"
 
+    if referral:
+        msg += f"\n🎉 * You were referred by*: `{referral}`\n"
+
     await update.message.reply_text(msg, parse_mode="Markdown", disable_web_page_preview=True)
     session.close()
 
@@ -137,8 +140,15 @@ async def refer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     session = Session()
     user = get_or_create_user(session, update.effective_user.id)
 
-    # Generate a referral link
-    referral_link = f"{BASE_URL}/start?ref={user.id}"
+    # Ensure the bot's username is available
+    bot_username = telegram_app.bot.username
+    if not bot_username:
+        await update.message.reply_text("❗ Unable to generate referral link. Bot username not found.")
+        session.close()
+        return
+
+    # Generate a referral link using the bot's username
+    referral_link = f"https://t.me/{bot_username}?start={user.id}"
 
     # Message to the user
     msg = (
