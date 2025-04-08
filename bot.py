@@ -56,14 +56,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             msg += f"✅ *{desc}*\n"
 
-    msg += "Telegram: 📢 [Official Channel](https://t.me/JimmyBossCollective) "
-    msg += "💬 [Official Group](https://t.me/httpJBC_Official)\n\n"
-    msg += "\n🌐 *Also, follow us on Social Media:*\n"
+    msg += "\nTelegram: 📢 [Official Channel](https://t.me/JimmyBossCollective) "
+    msg += "💬 [Official Group](https://t.me/httpJBC_Official)\n"
+    msg += "\n🌐 *Also, follow us on Social Media:*\n\n"
     msg += "🔗 CMC: [JBC Collective](https://coinmarketcap.com/community/profile/JimmyBossCollective/) "
-    msg += "[CoinMarketCap JimmyBoss](https://coinmarketcap.com/community/profile/Jimmyboss/)\n"
+    msg += " | [JimmyBoss](https://coinmarketcap.com/community/profile/Jimmyboss/)\n"
     msg += "✖️ X: [JBC Collective](https://x.com/JBCcollective) "
-    msg += "[Jimmy Boss](https://x.com/jimmyboss48)\n"
-    msg += "📺 [YouTube Channel](https://www.youtube.com/channel/UCDEUuvfe5bkFgpSvi143uwQ)\n"
+    msg += " | [Jimmy Boss](https://x.com/jimmyboss48)\n"
+    msg += "📺 YouTube: [Channel](https://www.youtube.com/channel/UCDEUuvfe5bkFgpSvi143uwQ)\n"
 
     if referral:
         msg += f"\n🎉 * You were referred by*: `{referral}`\n"
