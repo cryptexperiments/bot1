@@ -56,11 +56,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             msg += f"✅ *{desc}*\n"
 
-    msg += "\n🌐 *Follow us on Social Media:*\n"
-    msg += "🔗 [CoinMarketCap JBC Collective](https://coinmarketcap.com/community/profile/JimmyBossCollective/)\n"
-    msg += "🔗 [CoinMarketCap JimmyBoss](https://coinmarketcap.com/community/profile/Jimmyboss/)\n"
-    msg += "✖️ [X: JBC Collective](https://x.com/JBCcollective)\n"
-    msg += "✖️ [X: Jimmy Boss](https://x.com/jimmyboss48)\n"
+    msg += "Telegram: 📢 [Official Channel](https://t.me/JimmyBossCollective) "
+    msg += "💬 [Official Group](https://t.me/httpJBC_Official)\n\n"
+    msg += "\n🌐 *Also, follow us on Social Media:*\n"
+    msg += "🔗 CMC: [JBC Collective](https://coinmarketcap.com/community/profile/JimmyBossCollective/) "
+    msg += "[CoinMarketCap JimmyBoss](https://coinmarketcap.com/community/profile/Jimmyboss/)\n"
+    msg += "✖️ X: [JBC Collective](https://x.com/JBCcollective) "
+    msg += "[Jimmy Boss](https://x.com/jimmyboss48)\n"
     msg += "📺 [YouTube Channel](https://www.youtube.com/channel/UCDEUuvfe5bkFgpSvi143uwQ)\n"
 
     if referral:
