@@ -6,6 +6,9 @@ import enum
 Base = declarative_base()
 
 class Task(enum.Enum):
+    STARTED = "started"
+    WALLET_ADDED = "wallet_added"
+    STATUS = "status"
     FOLLOW_JIMMYBOSS_X = "follow_jimmyboss_x"
     FOLLOW_JBCOLLECTIVE_X = "follow_jbcollective_x"
     FOLLOW_JIMMYBOSS_CMC = "follow_jimmyboss_cmc"
@@ -25,8 +28,11 @@ task_instructions = {
     Task.SUBSCRIBE_YOUTUBE: ("Subscribe to our YouTube Channel", "https://www.youtube.com/channel/UCDEUuvfe5bkFgpSvi143uwQ"),
     Task.JOIN_TELEGRAM_CHANNEL: ("Join our Telegram Channel", "https://t.me/JimmyBossCollective"),
     Task.JOIN_TELEGRAM_GROUP: ("Join our Telegram Group", "https://t.me/httpJBC_Official"),
-    Task.REFERRAL: ("Invite at least one friend to join the bot", "/refer"),
+    Task.REFERRAL: ("Invite at least one friend to join the bot /refer", None),
     Task.COMPLETED: ("All tasks completed!", None),
+    Task.STARTED: (None, None),
+    Task.WALLET_ADDED: (None, None),
+    Task.STATUS: (None, None),
 }
 
 class User(Base):
