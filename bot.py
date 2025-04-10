@@ -58,7 +58,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     for task, (desc, cmd) in task_instructions.items():
         if cmd:
-            msg += f"➡️ *{desc}*: [{🔗}]({cmd})\n"
+            msg += f"➡️ *{desc}*: [🔗]({cmd})\n"
         else:
             msg += f"✅ *{desc}*\n"
 
@@ -90,7 +90,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if task in completed:
             msg += f"✅ *{desc}* — done\n"
         elif cmd:
-            msg += f"❌ *{desc}*: [{🔗}]({cmd})\n"
+            msg += f"❌ *{desc}*: [🔗]({cmd})\n"
         elif desc:
             msg += f"❌ *{desc}*\n"
 
