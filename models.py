@@ -6,18 +6,27 @@ import enum
 Base = declarative_base()
 
 class Task(enum.Enum):
-    STARTED = "started"
-    STATUS = "status"
-    WALLET_ADDED = "wallet_added"
-    REFERRAL_DONE = "referral_done"
+    FOLLOW_JIMMYBOSS_X = "follow_jimmyboss_x"
+    FOLLOW_JBCOLLECTIVE_X = "follow_jbcollective_x"
+    FOLLOW_JIMMYBOSS_CMC = "follow_jimmyboss_cmc"
+    FOLLOW_JBC_TOKEN_CMC = "follow_jbc_token_cmc"
+    SUBSCRIBE_YOUTUBE = "subscribe_youtube"
+    JOIN_TELEGRAM_CHANNEL = "join_telegram_channel"
+    JOIN_TELEGRAM_GROUP = "join_telegram_group"
+    REFERRAL = "invite_friend"
     COMPLETED = "completed"
 
+# Task instructions
 task_instructions = {
-    Task.STARTED: ("Start the bot", "/start"),
-    Task.STATUS: ("Review your account", "/status"),
-    Task.WALLET_ADDED: ("Add your wallet address", "/add_wallet <your_wallet_here>"),
-    Task.REFERRAL_DONE: ("Invite at least one friend", "/refer"),
-    Task.COMPLETED: ("All done!", None),
+    Task.FOLLOW_JIMMYBOSS_X: ("Follow @JimmyBoss on X", "https://x.com/jimmyboss48"),
+    Task.FOLLOW_JBCOLLECTIVE_X: ("Follow @JBCollective on X", "https://x.com/JBCcollective"),
+    Task.FOLLOW_JIMMYBOSS_CMC: ("Follow JimmyBoss on CoinMarketCap", "https://coinmarketcap.com/community/profile/Jimmyboss/"),
+    Task.FOLLOW_JBC_TOKEN_CMC: ("Follow JBC Token on CoinMarketCap", "https://coinmarketcap.com/community/profile/JimmyBossCollective/"),
+    Task.SUBSCRIBE_YOUTUBE: ("Subscribe to our YouTube Channel", "https://www.youtube.com/channel/UCDEUuvfe5bkFgpSvi143uwQ"),
+    Task.JOIN_TELEGRAM_CHANNEL: ("Join our Telegram Channel", "https://t.me/JimmyBossCollective"),
+    Task.JOIN_TELEGRAM_GROUP: ("Join our Telegram Group", "https://t.me/httpJBC_Official"),
+    Task.REFERRAL: ("Invite at least one friend to join the bot", "/refer"),
+    Task.COMPLETED: ("All tasks completed!", None),
 }
 
 class User(Base):

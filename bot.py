@@ -45,26 +45,32 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     referral = context.args[0] if context.args else None
     user = get_or_create_user(session, update.effective_user.id, referral)
-    add_task(session, user, Task.STARTED)
+    add_task(session, user, "STARTED")
 
     msg = (
         "👋 Welcome to the best Crypto Bot ever! The Boss TEST is here! Let's get you started:\n\n"
     )
+    
+    msg = (
+        "👋 Welcome to the best Crypto Bot ever! The Boss TEST is here! Let's get you started:\n\n"
+        "🎯 *TASK LIST – Total: 8 Tasks (Each = 100 JBC)*\n\n"
+    )
+        
     for task, (desc, cmd) in task_instructions.items():
         if cmd:
             msg += f"➡️ *{desc}*: [{cmd}]({cmd})\n"
         else:
             msg += f"✅ *{desc}*\n"
 
-    msg += "\nTelegram: 📢 [Official Channel](https://t.me/JimmyBossCollective) "
-    msg += "💬 [Official Group](https://t.me/httpJBC_Official)\n"
-    msg += "\n🌐 *Also, follow us on Social Media:*\n\n"
-    msg += "🔗 CMC: [JBC Collective](https://coinmarketcap.com/community/profile/JimmyBossCollective/) "
-    msg += " | [JimmyBoss](https://coinmarketcap.com/community/profile/Jimmyboss/)\n"
-    msg += "✖️ X: [JBC Collective](https://x.com/JBCcollective) "
-    msg += " | [Jimmy Boss](https://x.com/jimmyboss48)\n"
-    msg += "📺 YouTube: [Channel](https://www.youtube.com/channel/UCDEUuvfe5bkFgpSvi143uwQ)\n"
 
+    msg += (
+        "\n💰 *Rewards:*\n"
+        "✅ Each completed task: *100 JBC*\n"
+        "✅ Each valid referral (after task completion): *100 JBC*\n\n"
+        "📊 Use the /status command anytime to check your progress and see which tasks you've completed.\n\n"
+        "🌟 Let's get started and earn some JBC!"
+    )
+    
     if referral:
         msg += f"\n🎉 * You were referred by*: `{referral}`\n"
 
