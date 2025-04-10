@@ -58,7 +58,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     for task, (desc, cmd) in task_instructions.items():
         if cmd:
-            msg += f"➡️ *{desc}*: [{cmd}]({cmd})\n"
+            msg += f"➡️ *{desc}*: [🔗]({cmd})\n"
         else:
             msg += f"✅ *{desc}*\n"
 
@@ -67,6 +67,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "\n💰 *Rewards:*\n"
         "✅ Each completed task: *100 JBC*\n"
         "✅ Each valid referral (after task completion): *100 JBC*\n\n"
+        "🎉 *To start earning rewards, you need to add a wallet address in the /add_wallet command.*\n\n"
         "📊 Use the /status command anytime to check your progress and see which tasks you've completed.\n\n"
         "🌟 Let's get started and earn some JBC!"
     )
@@ -81,7 +82,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("status() called")
     session = Session()
     user = get_or_create_user(session, update.effective_user.id)
-    add_task(session, user, Task.STATUS)
+    add_task(session, user, "STATUS_CHECKED")
     completed = set(get_user_tasks(session, user))
     
     msg = "📋 *Your task progress:*\n\n"
@@ -131,7 +132,7 @@ async def receive_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     session = Session()
     user = get_or_create_user(session, update.effective_user.id)
     if set_wallet(session, user, wallet_address):
-        add_task(session, user, Task.WALLET_ADDED)
+        add_task(session, user, "WALLET_ADDED")
         await update.message.reply_text(f"✅ Wallet saved: `{wallet_address}`", parse_mode="Markdown")
     else:
         await update.message.reply_text("⚠️ Could not save your wallet. Please try again.")

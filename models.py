@@ -18,8 +18,8 @@ class Task(enum.Enum):
 
 # Task instructions
 task_instructions = {
-    Task.FOLLOW_JIMMYBOSS_X: ("Follow @JimmyBoss on X", "https://x.com/jimmyboss48"),
-    Task.FOLLOW_JBCOLLECTIVE_X: ("Follow @JBCollective on X", "https://x.com/JBCcollective"),
+    Task.FOLLOW_JIMMYBOSS_X: ("Follow JimmyBoss on X", "https://x.com/jimmyboss48"),
+    Task.FOLLOW_JBCOLLECTIVE_X: ("Follow JBCollective on X", "https://x.com/JBCcollective"),
     Task.FOLLOW_JIMMYBOSS_CMC: ("Follow JimmyBoss on CoinMarketCap", "https://coinmarketcap.com/community/profile/Jimmyboss/"),
     Task.FOLLOW_JBC_TOKEN_CMC: ("Follow JBC Token on CoinMarketCap", "https://coinmarketcap.com/community/profile/JimmyBossCollective/"),
     Task.SUBSCRIBE_YOUTUBE: ("Subscribe to our YouTube Channel", "https://www.youtube.com/channel/UCDEUuvfe5bkFgpSvi143uwQ"),
